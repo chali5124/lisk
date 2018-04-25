@@ -27,7 +27,7 @@ pipeline {
 		stage('Generate release') {
 			steps {
 				script {
-					def version = generateSrcCodeRelease()
+					env.LISK_VERSION = generateSrcCodeRelease()
 				}
 			}
 		}
@@ -38,15 +38,16 @@ pipeline {
 					git url: "https://github.com/LiskHQ/lisk-build.git", branch: "1.0.0"
 				}
 				sh """
-				cp release/${version}.tar.gz lisk-build/src
+				cp release/lisk-${env.LISK_VERSION}.tgz lisk-build/src
 				"""
+				
 			}
 		}
 		stage('Build release') {
 			steps {
 				dir('lisk-build') {
-					sh """"
-					bash build -n dev -v ${version}
+					sh """
+					bash build.sh -n dev -v ${env.LISK_VERSION}
 					ls -l release
 					"""
 				}
