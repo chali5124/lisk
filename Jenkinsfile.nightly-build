@@ -1,0 +1,61 @@
+/*
+ * Copyright © 2018 Lisk Foundation
+ *
+ * See the LICENSE file at the top-level directory of this distribution
+ * for licensing information.
+ *
+ * Unless otherwise agreed in a custom licensing agreement with the Lisk Foundation,
+ * no part of this software, including this file, may be copied, modified,
+ * propagated, or distributed except according to the terms contained in the
+ * LICENSE file.
+ *
+ * Removal or modification of this copyright notice is prohibited.
+ */
+
+def generateSrcCodeRelease() {
+		sh """
+		npm install
+		node ./node_modules/.bin/grunt release
+		jq -r '.version' config.json > "/tmp/version"
+		"""
+	return readFile("/tmp/version").trim()
+}
+
+pipeline {
+	agent { node { label 'node-07' } }
+	stages {
+		stage('Generate release') {
+			steps {
+				script {
+					def version = generateSrcCodeRelease()
+				}
+			}
+		}
+		stage('Prepare build environment') {
+			steps {
+				dir('lisk-build') {
+					git url: "https://github.com/LiskHQ/lisk-build.git", branch: "${env.BRANCH_NAME}"
+				}
+				sh """
+				cp release/${version}.tar.gz lisk-build/src
+				"""
+			}
+		}
+		stage('Build release') {
+			steps {
+				dir('lisk-build') {
+					sh """"
+					bash build -n dev -v ${version}
+					ls -l release
+					"""
+				}
+			}
+		}
+	}
+	post {
+		always {
+			// Push generated tarball to XXX
+			sh 'echo foo'
+		}
+	}
+}
