@@ -34,7 +34,8 @@ pipeline {
 		stage('Prepare build environment') {
 			steps {
 				dir('lisk-build') {
-					git url: "https://github.com/LiskHQ/lisk-build.git", branch: "${env.BRANCH_NAME}"
+					//git url: "https://github.com/LiskHQ/lisk-build.git", branch: "${env.BRANCH_NAME}"
+					git url: "https://github.com/LiskHQ/lisk-build.git", branch: "1.0.0"
 				}
 				sh """
 				cp release/${version}.tar.gz lisk-build/src
